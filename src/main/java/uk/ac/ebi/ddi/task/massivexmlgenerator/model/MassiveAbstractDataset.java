@@ -17,7 +17,7 @@ public class MassiveAbstractDataset {
     private String title;
 
     @JsonProperty("pi")
-    PrincipalInvestigator[] principalInvestigator;
+    private PrincipalInvestigator[] principalInvestigator;
 
     @JsonProperty("instrument")
     private String instrument;
@@ -71,6 +71,13 @@ public class MassiveAbstractDataset {
         return task;
     }
 
+    public PrincipalInvestigator[] getPrincipalInvestigator() {
+        return principalInvestigator;
+    }
+
+    public void setPrincipalInvestigator(PrincipalInvestigator[] principalInvestigator) {
+        this.principalInvestigator = principalInvestigator;
+    }
 
     @Override
     public String toString() {

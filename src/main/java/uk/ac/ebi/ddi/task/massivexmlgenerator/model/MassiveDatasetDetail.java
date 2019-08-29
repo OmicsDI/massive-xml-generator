@@ -190,8 +190,8 @@ public class MassiveDatasetDetail extends MassiveAbstractDataset implements IAPI
     @Override
     public Set<String> getLabHead() {
         Set<String> labNames = new HashSet<>();
-        if (principalInvestigator != null && principalInvestigator.length > 0) {
-            Arrays.asList(principalInvestigator).forEach(s -> {
+        if (getPrincipalInvestigator() != null && getPrincipalInvestigator().length > 0) {
+            Arrays.asList(getPrincipalInvestigator()).forEach(s -> {
                 if (s != null && s.getName() != null && s.getName().length() > 0) {
                     labNames.add(s.getName().trim());
                 }
@@ -203,8 +203,8 @@ public class MassiveDatasetDetail extends MassiveAbstractDataset implements IAPI
     @Override
     public Set<String> getLabHeadMail() {
         Set<String> labEmails = new HashSet<>();
-        if (principalInvestigator != null && principalInvestigator.length > 0) {
-            Arrays.asList(principalInvestigator).forEach(s -> {
+        if (getPrincipalInvestigator() != null && getPrincipalInvestigator().length > 0) {
+            Arrays.asList(getPrincipalInvestigator()).forEach(s -> {
                 if (s != null && s.getEmail() != null && s.getEmail().length() > 0) {
                     labEmails.add(s.getEmail().trim());
                 }
@@ -216,8 +216,8 @@ public class MassiveDatasetDetail extends MassiveAbstractDataset implements IAPI
     @Override
     public Set<String> getLabHeadAffiliation() {
         Set<String> labAffiliations = new HashSet<>();
-        if (principalInvestigator != null && principalInvestigator.length > 0) {
-            Arrays.asList(principalInvestigator).forEach(s -> {
+        if (getPrincipalInvestigator() != null && getPrincipalInvestigator().length > 0) {
+            Arrays.asList(getPrincipalInvestigator()).forEach(s -> {
                 if (s != null && s.getInstitution() != null && s.getInstitution().length() > 0) {
                     labAffiliations.add(s.getInstitution().trim());
                 }
