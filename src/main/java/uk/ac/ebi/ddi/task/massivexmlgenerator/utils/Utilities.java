@@ -22,6 +22,9 @@ import java.util.Set;
  */
 public class Utilities {
 
+    private Utilities() {
+    }
+
     public static Set<String> trimProperty(String property) {
         Set<String> properties = new HashSet<>();
         if (property != null && property.length() > 0) {

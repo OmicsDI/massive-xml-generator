@@ -35,90 +35,90 @@ import java.util.concurrent.atomic.AtomicInteger;
 @SpringBootApplication
 public class MassiveXmlGeneratorApplication implements CommandLineRunner {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(MassiveDatasetSummaryMassive.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MassiveDatasetSummaryMassive.class);
 
-	@Autowired
-	private MassiveService massiveService;
+    @Autowired
+    private MassiveService massiveService;
 
-	@Autowired
-	private MassiveXmlTaskProperties taskProperties;
+    @Autowired
+    private MassiveXmlTaskProperties taskProperties;
 
-	@Autowired
-	private IFileSystem fileSystem;
+    @Autowired
+    private IFileSystem fileSystem;
 
-	private List<Entry> entries = new ArrayList<>();
+    private List<Entry> entries = new ArrayList<>();
 
-	private DatasetFilter<MassiveDatasetSummaryMassive> datasetFilter = new DatasetFilter<>();
+    private DatasetFilter<MassiveDatasetSummaryMassive> datasetFilter = new DatasetFilter<>();
 
-	public MassiveXmlGeneratorApplication() {
-		datasetFilter.addFilter(new DatasetSummaryExceptUserFilter<>("tranche_mbraga"));
-		datasetFilter.addFilter(new DatasetSummaryTrancheFilter<>());
-		datasetFilter.addFilter(new DatasetSummaryTitleFilter<>());
-	}
+    public MassiveXmlGeneratorApplication() {
+        datasetFilter.addFilter(new DatasetSummaryExceptUserFilter<>("tranche_mbraga"));
+        datasetFilter.addFilter(new DatasetSummaryTrancheFilter<>());
+        datasetFilter.addFilter(new DatasetSummaryTitleFilter<>());
+    }
 
-	public static void main(String[] args) {
-		SpringApplication.run(MassiveXmlGeneratorApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(MassiveXmlGeneratorApplication.class, args);
+    }
 
-	@Override
-	public void run(String... args) throws Exception {
-		fileSystem.cleanDirectory(taskProperties.getOutputDir());
-		List<MassiveDatasetSummaryMassive> dataSetSummaries = massiveService.getAllDatasets();
-		AtomicInteger fileCount = new AtomicInteger(0);
-		for (MassiveDatasetSummaryMassive summary : dataSetSummaries) {
-			if (summary.getTask() == null || summary.getFileCount() < 1 || !datasetFilter.valid(summary)) {
-				continue;
-			}
-			if (!massiveService.getRepository(summary).equalsIgnoreCase(taskProperties.getDatabase())) {
-				continue;
-			}
-			MassiveDatasetDetail datasetDetail = massiveService.getDataset(summary.getTask());
-			if (datasetDetail != null && datasetDetail.getIdentifier() != null) {
-				if (summary.getCreated() != null) {
-					datasetDetail.setCreated(summary.getCreated());
-				}
+    @Override
+    public void run(String... args) throws Exception {
+        fileSystem.cleanDirectory(taskProperties.getOutputDir());
+        List<MassiveDatasetSummaryMassive> dataSetSummaries = massiveService.getAllDatasets();
+        AtomicInteger fileCount = new AtomicInteger(0);
+        for (MassiveDatasetSummaryMassive summary : dataSetSummaries) {
+            if (summary.getTask() == null || summary.getFileCount() < 1 || !datasetFilter.valid(summary)) {
+                continue;
+            }
+            if (!massiveService.getRepository(summary).equalsIgnoreCase(taskProperties.getDatabase())) {
+                continue;
+            }
+            MassiveDatasetDetail datasetDetail = massiveService.getDataset(summary.getTask());
+            if (datasetDetail != null && datasetDetail.getIdentifier() != null) {
+                if (summary.getCreated() != null) {
+                    datasetDetail.setCreated(summary.getCreated());
+                }
 
-				if (datasetDetail.getSpecies() != null) {
-					Entry entry = Transformers.transformAPIDatasetToEntry(datasetDetail);
-					entries.add(entry);
-					if (entries.size() % taskProperties.getEntriesPerFile() == 0) {
-						writeDatasetsToFile(entries, entries.size(), fileCount.getAndIncrement());
-					}
-				}
-			}
-		}
-		writeDatasetsToFile(entries, entries.size(), fileCount.getAndIncrement());
-	}
+                if (datasetDetail.getSpecies() != null) {
+                    Entry entry = Transformers.transformAPIDatasetToEntry(datasetDetail);
+                    entries.add(entry);
+                    if (entries.size() % taskProperties.getEntriesPerFile() == 0) {
+                        writeDatasetsToFile(entries, entries.size(), fileCount.getAndIncrement());
+                    }
+                }
+            }
+        }
+        writeDatasetsToFile(entries, entries.size(), fileCount.getAndIncrement());
+    }
 
-	private void writeDatasetsToFile(List<Entry> entries, int total, int fileCount) throws IOException {
-		if (entries.size() < 1) {
-			return;
-		}
+    private void writeDatasetsToFile(List<Entry> entries, int total, int fileCount) throws IOException {
+        if (entries.size() < 1) {
+            return;
+        }
 
-		String releaseDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
+        String releaseDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
 
-		ConvertibleOutputStream outputStream = new ConvertibleOutputStream();
-		try (Writer w = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
-			OmicsDataMarshaller mm = new OmicsDataMarshaller();
+        ConvertibleOutputStream outputStream = new ConvertibleOutputStream();
+        try (Writer w = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
+            OmicsDataMarshaller mm = new OmicsDataMarshaller();
 
-			Database database = new Database();
-			if (taskProperties.getDatabase().equalsIgnoreCase(Constants.GNPS)) {
-				database.setDescription(Constants.GNPS_DESCRIPTION);
-			} else if (taskProperties.getDatabase().equalsIgnoreCase(Constants.MASSIVE)) {
-				database.setDescription(Constants.MASSIVE_DESCRIPTION);
-			} else {
-				throw new RuntimeException("Unable to find description for " + taskProperties.getDatabase());
-			}
-			database.setName(taskProperties.getDatabase());
-			database.setRelease(releaseDate);
-			database.setEntries(entries);
-			database.setEntryCount(total);
-			mm.marshall(database, w);
-		}
+            Database database = new Database();
+            if (taskProperties.getDatabase().equalsIgnoreCase(Constants.GNPS)) {
+                database.setDescription(Constants.GNPS_DESCRIPTION);
+            } else if (taskProperties.getDatabase().equalsIgnoreCase(Constants.MASSIVE)) {
+                database.setDescription(Constants.MASSIVE_DESCRIPTION);
+            } else {
+                throw new RuntimeException("Unable to find description for " + taskProperties.getDatabase());
+            }
+            database.setName(taskProperties.getDatabase());
+            database.setRelease(releaseDate);
+            database.setEntries(entries);
+            database.setEntryCount(total);
+            mm.marshall(database, w);
+        }
 
-		String filePath = taskProperties.getOutputDir() + "/" + taskProperties.getPrefix() + fileCount + ".xml";
-		LOGGER.info("Attempting to write data to {}", filePath);
-		fileSystem.saveFile(outputStream, filePath);
-		entries.clear();
-	}
+        String filePath = taskProperties.getOutputDir() + "/" + taskProperties.getPrefix() + fileCount + ".xml";
+        LOGGER.info("Attempting to write data to {}", filePath);
+        fileSystem.saveFile(outputStream, filePath);
+        entries.clear();
+    }
 }
